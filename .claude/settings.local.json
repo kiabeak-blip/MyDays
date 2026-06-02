@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"C:\\\\dev\\\\Projects\\\\flutter\\\\Mydays\" -Recurse -Depth 3)",
+      "Bash(Select-Object FullName)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\dev\\\\Projects\\\\flutter\\\\Mydays\" -Recurse -Depth 3 | ForEach-Object { $_.FullName })",
+      "PowerShell(@\\(Get-ChildItem \"C:\\\\dev\\\\Projects\\\\flutter\\\\Mydays\" -Recurse -Force\\).Count)",
+      "Bash(flutter --version)",
+      "Bash(flutter create *)",
+      "Bash(flutter pub *)",
+      "Bash(flutter analyze *)",
+      "Bash(flutter build *)",
+      "Bash(flutter run *)",
+      "Bash(wmic logicaldisk *)",
+      "Bash(flutter clean *)",
+      "PowerShell(Stop-Process -Name \"mydays\" -Force -ErrorAction SilentlyContinue)",
+      "Bash(dart analyze *)",
+      "Bash(Stop-Process -Name \"mydays\" -Force -ErrorAction SilentlyContinue)",
+      "PowerShell($env:PATH += \";C:\\\\Users\\\\Nani\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\bin\"; firebase projects:list 2>&1)",
+      "PowerShell(Invoke-WebRequest -Uri \"https://firebase.tools/bin/win/latest\" -OutFile \"$env:USERPROFILE\\\\firebase.exe\" -UseBasicParsing; Write-Output \"Downloaded\")",
+      "PowerShell($env:PATH += \";C:\\\\Users\\\\Nani\\\\AppData\\\\Local\\\\Pub\\\\Cache\\\\bin\"; Set-Location \"C:\\\\dev\\\\Projects\\\\flutter\\\\Mydays\"; & \"$env:USERPROFILE\\\\firebase.exe\" login 2>&1)",
+      "Bash(taskkill /F /IM mydays.exe)",
+      "Bash(curl -s --connect-timeout 10 \"ftp://hararhrb:T+jF9\\(f4c\\)Jk688D5[@harar-hotels.com/\" --list-only)",
+      "Bash(curl -v --connect-timeout 10 \"ftp://hararhrb:T+jF9%28f4c%29Jk688D5%5B@harar-hotels.com/\")",
+      "PowerShell(Set-Location \"C:\\\\dev\\\\Projects\\\\flutter\\\\Mydays\"; PowerShell -ExecutionPolicy Bypass -File \".\\\\deploy.ps1\")",
+      "PowerShell(cd C:\\\\dev\\\\Projects\\\\flutter\\\\Mydays; Start-Process powershell -ArgumentList '-NoExit', '-Command', 'flutter run -d windows' -WindowStyle Normal)",
+      "Bash(git init *)",
+      "Bash(git add *)"
+    ]
+  }
+}
