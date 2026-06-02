@@ -215,6 +215,7 @@ class _AllTasksScreenState extends State<AllTasksScreen> {
     if (t.isRecurring) {
       return switch (t.recurrence) {
         RecurrenceType.daily => '🔁 Daily — from ${DateFormat('MMM d').format(t.referenceDate)}',
+        RecurrenceType.everyOtherDay => '🔁 Every other day — from ${DateFormat('MMM d').format(t.referenceDate)}',
         RecurrenceType.weekdays => '🔁 Mon–Fri — from ${DateFormat('MMM d').format(t.referenceDate)}',
         RecurrenceType.weekly => '🔁 Weekly (${DateFormat('EEEE').format(t.referenceDate)}s)',
         RecurrenceType.none => 'Recurring',

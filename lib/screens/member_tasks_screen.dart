@@ -515,6 +515,7 @@ class _TaskRowState extends State<_TaskRow> {
 
   String _recurrenceLabel(RecurrenceType r) => switch (r) {
         RecurrenceType.daily => 'DAILY',
+        RecurrenceType.everyOtherDay => 'ALT DAY',
         RecurrenceType.weekdays => 'MON–FRI',
         RecurrenceType.weekly => 'WEEKLY',
         RecurrenceType.none => '',

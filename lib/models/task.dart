@@ -5,7 +5,7 @@ export 'subtask.dart';
 
 enum TaskScope { day, week, month, custom }
 
-enum RecurrenceType { none, daily, weekdays, weekly }
+enum RecurrenceType { none, daily, everyOtherDay, weekdays, weekly }
 
 class Task {
   final String id;
@@ -58,6 +58,8 @@ class Task {
           break;
         case RecurrenceType.daily:
           return true;
+        case RecurrenceType.everyOtherDay:
+          return d.difference(start).inDays % 2 == 0;
         case RecurrenceType.weekdays:
           return d.weekday >= DateTime.monday &&
               d.weekday <= DateTime.friday;

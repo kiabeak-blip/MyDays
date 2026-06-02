@@ -311,6 +311,7 @@ class _RecurrenceBadge extends StatelessWidget {
     const color = Color(0xFF43A047);
     final label = switch (recurrence) {
       RecurrenceType.daily => 'DAILY',
+      RecurrenceType.everyOtherDay => 'ALT DAY',
       RecurrenceType.weekdays => 'MON–FRI',
       RecurrenceType.weekly => 'WEEKLY',
       RecurrenceType.none => '',

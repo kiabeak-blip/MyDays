@@ -227,6 +227,13 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                       setState(() => _recurrence = RecurrenceType.daily),
                 ),
                 _RecurrenceChip(
+                  label: 'Alt Day',
+                  icon: Icons.repeat_one,
+                  selected: _recurrence == RecurrenceType.everyOtherDay,
+                  onTap: () =>
+                      setState(() => _recurrence = RecurrenceType.everyOtherDay),
+                ),
+                _RecurrenceChip(
                   label: 'Mon – Fri',
                   icon: Icons.date_range,
                   selected: _recurrence == RecurrenceType.weekdays,

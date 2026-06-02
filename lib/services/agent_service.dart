@@ -117,11 +117,11 @@ You can help by:
 
 When the user asks to CREATE a task, reply naturally AND include a JSON action block like:
 ```json
-{"action":"add_task","params":{"title":"...","description":"...","memberNames":["Name1"],"recurrence":"none|daily|weekdays|weekly","customDates":["YYYY-MM-DD"]}}
+{"action":"add_task","params":{"title":"...","description":"...","memberNames":["Name1"],"recurrence":"none|daily|everyOtherDay|weekdays|weekly","customDates":["YYYY-MM-DD"]}}
 ```
 
 Rules for the JSON block:
-- "recurrence" must be one of: none, daily, weekdays, weekly
+- "recurrence" must be one of: none, daily, everyOtherDay, weekdays, weekly
 - If recurrence is "none", include "customDates" (array of ISO date strings the task applies to)
 - If recurrence is not "none", omit "customDates"
 - "memberNames" must match names from the family list above
