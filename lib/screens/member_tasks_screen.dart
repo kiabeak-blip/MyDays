@@ -275,7 +275,7 @@ class _MemberTasksScreenState extends State<MemberTasksScreen> {
 
 // ── Task row ──────────────────────────────────────────────────────────────
 
-class _TaskRow extends StatelessWidget {
+class _TaskRow extends StatefulWidget {
   final Task task;
   final FamilyMember member;
   final DateTime date;
@@ -291,119 +291,223 @@ class _TaskRow extends StatelessWidget {
   });
 
   @override
+  State<_TaskRow> createState() => _TaskRowState();
+}
+
+class _TaskRowState extends State<_TaskRow> {
+  bool _expanded = false;
+
+  @override
   Widget build(BuildContext context) {
-    final color = Color(member.colorValue);
-    final done = task.completionsForDate(date)[member.id] == true;
+    final color = Color(widget.member.colorValue);
+    final done =
+        widget.task.completionsForDate(widget.date)[widget.member.id] == true;
     final cs = Theme.of(context).colorScheme;
+    final hasSubtasks = widget.task.subtasks.isNotEmpty;
+    final doneSteps = widget.task.subtaskDoneCount;
+    final totalSteps = widget.task.subtasks.length;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: Card(
-        child: InkWell(
-          onTap: onEdit,
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            child: Row(
-              children: [
-                // Completion toggle
-                GestureDetector(
-                  onTap: onToggle,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: done ? color : Colors.transparent,
-                      border: Border.all(
-                        color: done
-                            ? color
-                            : cs.outline.withValues(alpha: 0.5),
-                        width: 2,
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          children: [
+            // ── Main row ────────────────────────────────────────────────
+            InkWell(
+              onTap: hasSubtasks
+                  ? () => setState(() => _expanded = !_expanded)
+                  : widget.onEdit,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 14, vertical: 12),
+                child: Row(
+                  children: [
+                    // Completion toggle
+                    GestureDetector(
+                      onTap: widget.onToggle,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: done ? color : Colors.transparent,
+                          border: Border.all(
+                            color: done
+                                ? color
+                                : cs.outline.withValues(alpha: 0.5),
+                            width: 2,
+                          ),
+                        ),
+                        child: done
+                            ? const Icon(Icons.check,
+                                color: Colors.white, size: 16)
+                            : null,
                       ),
                     ),
-                    child: done
-                        ? const Icon(Icons.check,
-                            color: Colors.white, size: 16)
-                        : null,
-                  ),
-                ),
-                const SizedBox(width: 14),
-                // Emoji icon (if set)
-                if (task.iconEmoji.isNotEmpty) ...[
-                  Container(
-                    width: 38,
-                    height: 38,
-                    margin: const EdgeInsets.only(right: 10),
-                    decoration: BoxDecoration(
-                      color: cs.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Center(
-                      child: Text(task.iconEmoji,
-                          style: const TextStyle(fontSize: 22)),
-                    ),
-                  ),
-                ],
-                // Task info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        task.title,
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          decoration: done
-                              ? TextDecoration.lineThrough
-                              : null,
-                          color: done
-                              ? cs.onSurfaceVariant
-                              : cs.onSurface,
+                    const SizedBox(width: 14),
+                    // Emoji icon (if set)
+                    if (widget.task.iconEmoji.isNotEmpty) ...[
+                      Container(
+                        width: 38,
+                        height: 38,
+                        margin: const EdgeInsets.only(right: 10),
+                        decoration: BoxDecoration(
+                          color: cs.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Center(
+                          child: Text(widget.task.iconEmoji,
+                              style: const TextStyle(fontSize: 22)),
                         ),
                       ),
-                      if (task.description.isNotEmpty)
-                        Text(
-                          task.description,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(color: cs.onSurfaceVariant),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
                     ],
-                  ),
-                ),
-                // Scope/recurrence badge
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: (task.isRecurring
-                            ? const Color(0xFF43A047)
-                            : cs.primary)
-                        .withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    task.isRecurring
-                        ? _recurrenceLabel(task.recurrence)
-                        : task.scope.name.toUpperCase(),
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      color: task.isRecurring
-                          ? const Color(0xFF43A047)
-                          : cs.primary,
+                    // Task info
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.task.title,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              decoration: done
+                                  ? TextDecoration.lineThrough
+                                  : null,
+                              color: done
+                                  ? cs.onSurfaceVariant
+                                  : cs.onSurface,
+                            ),
+                          ),
+                          if (widget.task.description.isNotEmpty)
+                            Text(
+                              widget.task.description,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(color: cs.onSurfaceVariant),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          // Subtask progress hint when collapsed
+                          if (hasSubtasks && !_expanded) ...[
+                            const SizedBox(height: 3),
+                            Row(
+                              children: [
+                                Icon(Icons.checklist_rounded,
+                                    size: 12,
+                                    color:
+                                        color.withValues(alpha: 0.7)),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '$doneSteps / $totalSteps steps',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: color.withValues(alpha: 0.85),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ],
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 6),
+                    // Scope/recurrence badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: (widget.task.isRecurring
+                                ? const Color(0xFF43A047)
+                                : cs.primary)
+                            .withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        widget.task.isRecurring
+                            ? _recurrenceLabel(widget.task.recurrence)
+                            : widget.task.scope.name.toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: widget.task.isRecurring
+                              ? const Color(0xFF43A047)
+                              : cs.primary,
+                        ),
+                      ),
+                    ),
+                    // Expand chevron
+                    if (hasSubtasks) ...[
+                      const SizedBox(width: 4),
+                      AnimatedRotation(
+                        turns: _expanded ? 0.5 : 0,
+                        duration: const Duration(milliseconds: 200),
+                        child: Icon(Icons.expand_more,
+                            size: 20, color: cs.onSurfaceVariant),
+                      ),
+                    ],
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
+            // ── Expanded subtask list ────────────────────────────────────
+            if (_expanded && hasSubtasks) ...[
+              Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: cs.outlineVariant.withValues(alpha: 0.5)),
+              ...widget.task.subtasks.map((s) => _SubtaskTile(
+                    subtask: s,
+                    color: color,
+                    onToggle: () => context
+                        .read<AppProvider>()
+                        .toggleSubtask(widget.task.id, s.id),
+                  )),
+              // Footer: progress + edit link
+              Padding(
+                padding:
+                    const EdgeInsets.fromLTRB(14, 4, 10, 10),
+                child: Row(
+                  children: [
+                    // Mini progress bar
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: totalSteps == 0
+                              ? 0
+                              : doneSteps / totalSteps,
+                          backgroundColor:
+                              color.withValues(alpha: 0.12),
+                          valueColor:
+                              AlwaysStoppedAnimation(color),
+                          minHeight: 6,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      '$doneSteps/$totalSteps',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: color,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: widget.onEdit,
+                      child: Icon(Icons.edit_outlined,
+                          size: 16, color: cs.onSurfaceVariant),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );
@@ -415,6 +519,64 @@ class _TaskRow extends StatelessWidget {
         RecurrenceType.weekly => 'WEEKLY',
         RecurrenceType.none => '',
       };
+}
+
+// ── Subtask tile ──────────────────────────────────────────────────────────
+
+class _SubtaskTile extends StatelessWidget {
+  final SubTask subtask;
+  final Color color;
+  final VoidCallback onToggle;
+
+  const _SubtaskTile({
+    required this.subtask,
+    required this.color,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return InkWell(
+      onTap: onToggle,
+      child: Padding(
+        padding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+        child: Row(
+          children: [
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 180),
+              child: Icon(
+                subtask.completed
+                    ? Icons.check_circle_rounded
+                    : Icons.radio_button_unchecked,
+                key: ValueKey(subtask.completed),
+                size: 22,
+                color: subtask.completed
+                    ? color
+                    : cs.onSurfaceVariant.withValues(alpha: 0.5),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                subtask.title,
+                style: TextStyle(
+                  fontSize: 14,
+                  decoration: subtask.completed
+                      ? TextDecoration.lineThrough
+                      : null,
+                  color: subtask.completed
+                      ? cs.onSurfaceVariant
+                      : cs.onSurface,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────
