@@ -324,7 +324,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   }
 
   bool get _canSave =>
-      _scope != TaskScope.custom || _customDates.isNotEmpty;
+      _recurrence != RecurrenceType.none || _customDates.isNotEmpty;
 
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
