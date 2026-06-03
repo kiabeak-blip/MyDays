@@ -27,11 +27,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final auth = context.watch<ap.AuthProvider>();
     final cs = Theme.of(context).colorScheme;
 
-    final recurringTasks = provider.tasks
+    // Kids only see tasks assigned to themselves
+    final memberId = auth.memberId;
+    final visibleTasks = (auth.isParent || memberId == null)
+        ? provider.tasks
+        : provider.tasks.where((t) => t.memberIds.contains(memberId)).toList();
+
+    final recurringTasks = visibleTasks
         .where((t) => t.isRecurring && t.appliesToDate(_selectedDay))
         .toList();
 
-    final oneDayTasks = provider.tasks
+    final oneDayTasks = visibleTasks
         .where((t) => !t.isRecurring && t.appliesToDate(_selectedDay))
         .toList();
 
