@@ -354,7 +354,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_scope == TaskScope.custom && _customDates.isEmpty) return;
+    if (_recurrence == RecurrenceType.none && _customDates.isEmpty) return;
 
     final provider = context.read<AppProvider>();
     final memberIds = _selectedMemberIds.toList();
