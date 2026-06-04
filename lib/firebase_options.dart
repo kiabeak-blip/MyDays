@@ -37,11 +37,11 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyCT5pV4AeHo-QGX4N2p9zO-Y_0mrdxAp2M',
-    appId: '1:548762911232:ios:30963c13510e90860a0ee5',
+    appId: '1:548762911232:ios:cbad5474cf1f2e940a0ee5',
     messagingSenderId: '548762911232',
     projectId: 'mydays-84ed9',
     storageBucket: 'mydays-84ed9.firebasestorage.app',
-    iosBundleId: 'com.hararhotels.mydays',
+    iosBundleId: 'com.mydays.app',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(

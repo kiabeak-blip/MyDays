@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>548762911232-uu85a5afk9ul61ikgk0d9vubgm7vus2n.apps.googleusercontent.com</string>
+	<string>548762911232-67kbhi3n54l0j471odbjn343drieppn3.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.548762911232-uu85a5afk9ul61ikgk0d9vubgm7vus2n</string>
+	<string>com.googleusercontent.apps.548762911232-67kbhi3n54l0j471odbjn343drieppn3</string>
 	<key>API_KEY</key>
 	<string>AIzaSyCT5pV4AeHo-QGX4N2p9zO-Y_0mrdxAp2M</string>
 	<key>GCM_SENDER_ID</key>
@@ -13,7 +13,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.hararhotels.mydays</string>
+	<string>com.mydays.app</string>
 	<key>PROJECT_ID</key>
 	<string>mydays-84ed9</string>
 	<key>STORAGE_BUCKET</key>
@@ -29,6 +29,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:548762911232:ios:30963c13510e90860a0ee5</string>
+	<string>1:548762911232:ios:cbad5474cf1f2e940a0ee5</string>
 </dict>
 </plist>
