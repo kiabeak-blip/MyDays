@@ -6,9 +6,7 @@ workflows:
 
     environment:
       groups:
-        - app_store_credentials   # APP_STORE_CONNECT_KEY_IDENTIFIER, APP_STORE_CONNECT_ISSUER_ID, APP_STORE_CONNECT_PRIVATE_KEY
-        - certificate_credentials # CERTIFICATE_PRIVATE_KEY
-        - mydays_firebase_ios     # GOOGLE_SERVICE_INFO_PLIST (base64-encoded)
+        - mydays_ios  # All credentials: App Store Connect API + certificate + Firebase plist
       vars:
         BUNDLE_ID: com.hararhotels.mydays
         APP_NAME: MyDays
