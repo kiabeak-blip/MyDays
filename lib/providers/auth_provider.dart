@@ -62,11 +62,20 @@ class AuthProvider extends ChangeNotifier {
     _familyId = record['familyId'] as String;
     _memberId = record['memberId'] as String?;
 
+    // Check if this member's record has isParent = true
+    bool memberIsParent = false;
+    if (_memberId != null) {
+      final member = await _svc.getMember(_familyId!, _memberId!);
+      memberIsParent = member?.isParent ?? false;
+    }
+
     _familySubscription?.cancel();
     _familySubscription = _svc.watchFamily(_familyId!).listen((settings) {
       if (settings == null) return;
       _allowChildAddTasks = settings.allowChildAddTasks;
-      _role = settings.ownerUid == uid ? MemberRole.parent : MemberRole.child;
+      _role = (settings.ownerUid == uid || memberIsParent)
+          ? MemberRole.parent
+          : MemberRole.child;
       notifyListeners();
     });
 

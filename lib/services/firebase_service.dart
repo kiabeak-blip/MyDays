@@ -109,6 +109,15 @@ class FirebaseService {
             (snap) => snap.docs.map((d) => FamilyMember.fromJson(d.data())).toList(),
           );
 
+  Future<FamilyMember?> getMember(String familyId, String memberId) async {
+    final doc = await _db
+        .collection('families/$familyId/members')
+        .doc(memberId)
+        .get();
+    if (!doc.exists) return null;
+    return FamilyMember.fromJson(doc.id, doc.data()!);
+  }
+
   Future<void> setMember(String familyId, FamilyMember member) =>
       _db.collection('families/$familyId/members').doc(member.id).set(member.toJson());
 
