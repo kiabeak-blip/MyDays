@@ -115,7 +115,7 @@ class FirebaseService {
         .doc(memberId)
         .get();
     if (!doc.exists) return null;
-    return FamilyMember.fromJson(doc.id, doc.data()!);
+    return FamilyMember.fromJson(doc.data()!);
   }
 
   Future<void> setMember(String familyId, FamilyMember member) =>
