@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart' as ap;
+import '../providers/app_provider.dart';
 import 'agent_screen.dart';
 import 'calendar_screen.dart';
+import 'member_tasks_screen.dart';
 import 'members_screen.dart';
 import 'settings_screen.dart';
 
@@ -18,24 +20,30 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isParent = context.watch<ap.AuthProvider>().isParent;
+    final auth = context.watch<ap.AuthProvider>();
+    final provider = context.watch<AppProvider>();
+    final isParent = auth.isParent;
 
-    // Parents see all 4 tabs; kids see Calendar, Assistant, Settings only
-    final screens = isParent
-        ? const [
-            CalendarScreen(),
-            MembersScreen(),
-            AgentScreen(),
-            SettingsScreen(),
-          ]
-        : const [
-            CalendarScreen(),
-            AgentScreen(),
-            SettingsScreen(),
-          ];
+    // Find current member for the My Tasks tab
+    final currentMember = auth.memberId != null
+        ? provider.members.where((m) => m.id == auth.memberId).firstOrNull
+        : null;
 
-    final destinations = isParent
-        ? const [
+    if (isParent) {
+      // Parents: Calendar | Members | Assistant | Settings
+      final screens = const [
+        CalendarScreen(),
+        MembersScreen(),
+        AgentScreen(),
+        SettingsScreen(),
+      ];
+
+      return Scaffold(
+        body: screens[_index.clamp(0, screens.length - 1)],
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: _index.clamp(0, screens.length - 1),
+          onDestinationSelected: (i) => setState(() => _index = i),
+          destinations: const [
             NavigationDestination(
               icon: Icon(Icons.calendar_month_outlined),
               selectedIcon: Icon(Icons.calendar_month),
@@ -56,12 +64,36 @@ class _MainScreenState extends State<MainScreen> {
               selectedIcon: Icon(Icons.settings),
               label: 'Settings',
             ),
-          ]
-        : const [
+          ],
+        ),
+      );
+    } else {
+      // Kids: Calendar | My Tasks | Assistant | Settings
+      final screens = [
+        const CalendarScreen(),
+        if (currentMember != null)
+          MemberTasksScreen(member: currentMember)
+        else
+          const _NoMemberPlaceholder(),
+        const AgentScreen(),
+        const SettingsScreen(),
+      ];
+
+      return Scaffold(
+        body: screens[_index.clamp(0, screens.length - 1)],
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: _index.clamp(0, screens.length - 1),
+          onDestinationSelected: (i) => setState(() => _index = i),
+          destinations: const [
             NavigationDestination(
               icon: Icon(Icons.calendar_month_outlined),
               selectedIcon: Icon(Icons.calendar_month),
               label: 'Calendar',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.checklist_outlined),
+              selectedIcon: Icon(Icons.checklist),
+              label: 'My Tasks',
             ),
             NavigationDestination(
               icon: Icon(Icons.auto_awesome_outlined),
@@ -73,17 +105,21 @@ class _MainScreenState extends State<MainScreen> {
               selectedIcon: Icon(Icons.settings),
               label: 'Settings',
             ),
-          ];
+          ],
+        ),
+      );
+    }
+  }
+}
 
-    // Clamp index in case role changed while on Members tab
-    final safeIndex = _index.clamp(0, screens.length - 1);
+class _NoMemberPlaceholder extends StatelessWidget {
+  const _NoMemberPlaceholder();
 
-    return Scaffold(
-      body: screens[safeIndex],
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: safeIndex,
-        onDestinationSelected: (i) => setState(() => _index = i),
-        destinations: destinations,
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(
+        child: Text('Loading your tasks…'),
       ),
     );
   }

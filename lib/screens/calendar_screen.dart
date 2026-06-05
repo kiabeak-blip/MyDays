@@ -17,9 +17,14 @@ class CalendarScreen extends StatefulWidget {
 }
 
 class _CalendarScreenState extends State<CalendarScreen> {
-  CalendarFormat _format = CalendarFormat.month;
-  DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
+
+  bool get _isToday {
+    final now = DateTime.now();
+    return _selectedDay.year == now.year &&
+        _selectedDay.month == now.month &&
+        _selectedDay.day == now.day;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,63 +49,79 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('MyDays'),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: TextButton(
-              onPressed: () => setState(() {
-                _format = _format == CalendarFormat.month
-                    ? CalendarFormat.week
-                    : CalendarFormat.month;
-              }),
-              child: Text(_format == CalendarFormat.month
-                  ? 'Week view'
-                  : 'Month view'),
-            ),
-          ),
-        ],
       ),
       body: Column(
         children: [
-          TableCalendar(
-            firstDay: DateTime.utc(2020, 1, 1),
-            lastDay: DateTime.utc(2030, 12, 31),
-            focusedDay: _focusedDay,
-            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-            calendarFormat: _format,
-            eventLoader: (day) => provider.getTasksForDate(day),
-            onDaySelected: (selected, focused) => setState(() {
-              _selectedDay = selected;
-              _focusedDay = focused;
-            }),
-            onFormatChanged: (f) => setState(() => _format = f),
-            onPageChanged: (f) => setState(() => _focusedDay = f),
-            rowHeight: 44,
-            calendarStyle: CalendarStyle(
-              markersMaxCount: 4,
-              markerDecoration: BoxDecoration(
-                  color: cs.primary, shape: BoxShape.circle),
-              selectedDecoration: BoxDecoration(
-                  color: cs.primary, shape: BoxShape.circle),
-              todayDecoration: BoxDecoration(
-                  color: cs.primaryContainer, shape: BoxShape.circle),
-              todayTextStyle: TextStyle(
-                  color: cs.onPrimaryContainer,
-                  fontWeight: FontWeight.bold),
-            ),
-            headerStyle: const HeaderStyle(
-              formatButtonVisible: false,
-              titleCentered: true,
+          // ── Compact date navigation bar ──────────────────────────
+          Container(
+            color: cs.surfaceContainerLow,
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.chevron_left),
+                  onPressed: () => setState(() =>
+                      _selectedDay =
+                          _selectedDay.subtract(const Duration(days: 1))),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => _openCalendar(context, provider),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: _isToday
+                            ? cs.primaryContainer
+                            : cs.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.calendar_month_outlined,
+                            size: 16,
+                            color: _isToday
+                                ? cs.onPrimaryContainer
+                                : cs.onSurfaceVariant,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            _isToday
+                                ? 'Today — ${DateFormat('MMM d').format(_selectedDay)}'
+                                : DateFormat('EEE, MMM d, yyyy')
+                                    .format(_selectedDay),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                              color: _isToday
+                                  ? cs.onPrimaryContainer
+                                  : cs.onSurface,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.chevron_right),
+                  onPressed: () => setState(() =>
+                      _selectedDay =
+                          _selectedDay.add(const Duration(days: 1))),
+                ),
+              ],
             ),
           ),
-          const Divider(height: 1),
-          // ── Member aggregate bar ──────────────────────────────────
-          if (provider.members.isNotEmpty)
+          // ── Member aggregate bar (parents only) ──────────────────
+          if (auth.isParent && provider.members.isNotEmpty)
             _MemberAggregateBar(
               members: provider.members,
               tasks: provider.getTasksForDate(_selectedDay),
               date: _selectedDay,
             ),
+          // ── Task list ─────────────────────────────────────────────
           Expanded(
             child: ListView(
               children: [
@@ -116,8 +137,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       provider.toggleSubtask(tid, sid),
                   onDelete: (tid) => provider.deleteTask(tid),
                   onEdit: (t) => _pushForm(context, task: t),
-                  onAdd: () => _pushForm(context,
-                      recurrence: RecurrenceType.daily),
+                  onAdd: () =>
+                      _pushForm(context, recurrence: RecurrenceType.daily),
                   addLabel: '+ Recurring',
                 ),
                 _Section(
@@ -146,6 +167,94 @@ class _CalendarScreenState extends State<CalendarScreen> {
               child: const Icon(Icons.add),
             )
           : null,
+    );
+  }
+
+  void _openCalendar(BuildContext context, AppProvider provider) {
+    DateTime focusedDay = _selectedDay;
+    CalendarFormat format = CalendarFormat.month;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) => Padding(
+          padding: const EdgeInsets.only(top: 12, bottom: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Drag handle
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Theme.of(ctx).colorScheme.outlineVariant,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 8),
+              // Format toggle
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: SegmentedButton<CalendarFormat>(
+                  segments: const [
+                    ButtonSegment(
+                        value: CalendarFormat.week, label: Text('Week')),
+                    ButtonSegment(
+                        value: CalendarFormat.month, label: Text('Month')),
+                  ],
+                  selected: {format},
+                  onSelectionChanged: (s) =>
+                      setModalState(() => format = s.first),
+                ),
+              ),
+              const SizedBox(height: 8),
+              TableCalendar(
+                firstDay: DateTime.utc(2020, 1, 1),
+                lastDay: DateTime.utc(2030, 12, 31),
+                focusedDay: focusedDay,
+                selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+                calendarFormat: format,
+                eventLoader: (day) => provider.getTasksForDate(day),
+                onDaySelected: (selected, focused) {
+                  setState(() => _selectedDay = selected);
+                  setModalState(() => focusedDay = focused);
+                  Navigator.pop(ctx);
+                },
+                onFormatChanged: (f) => setModalState(() => format = f),
+                onPageChanged: (f) => setModalState(() => focusedDay = f),
+                rowHeight: 44,
+                calendarStyle: CalendarStyle(
+                  markersMaxCount: 4,
+                  markerDecoration: BoxDecoration(
+                    color: Theme.of(ctx).colorScheme.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  selectedDecoration: BoxDecoration(
+                    color: Theme.of(ctx).colorScheme.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  todayDecoration: BoxDecoration(
+                    color: Theme.of(ctx).colorScheme.primaryContainer,
+                    shape: BoxShape.circle,
+                  ),
+                  todayTextStyle: TextStyle(
+                    color: Theme.of(ctx).colorScheme.onPrimaryContainer,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                headerStyle: const HeaderStyle(
+                  formatButtonVisible: false,
+                  titleCentered: true,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -216,10 +325,7 @@ class _Section extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleSmall
-                          ?.copyWith(
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
                             color: cs.primary,
                             fontWeight: FontWeight.bold,
                           ),
@@ -291,7 +397,7 @@ class _MemberAggregateBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: Theme.of(context).colorScheme.surfaceContainerLow,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
       child: Row(
         children: members.map((m) {
           final memberTasks =
@@ -310,8 +416,7 @@ class _MemberAggregateBar extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(m.emoji,
-                          style: const TextStyle(fontSize: 16)),
+                      Text(m.emoji, style: const TextStyle(fontSize: 16)),
                       const SizedBox(width: 4),
                       Text(
                         total == 0 ? '–' : '$done/$total',
