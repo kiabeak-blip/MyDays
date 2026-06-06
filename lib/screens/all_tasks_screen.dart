@@ -158,11 +158,12 @@ class _AllTasksScreenState extends State<AllTasksScreen> {
                                     .toList(),
                             displayCompletions:
                                 task.completionsForDate(DateTime.now()),
+                            date: DateTime.now(),
                             onToggle: (mid) => provider.toggleCompletion(
                                 task.id, mid,
                                 date: DateTime.now()),
                             onToggleSubtask: (sid) =>
-                                provider.toggleSubtask(task.id, sid),
+                                provider.toggleSubtask(task.id, sid, date: DateTime.now()),
                             onDelete: () => provider.deleteTask(task.id),
                             onEdit: () => Navigator.push(
                               context,

@@ -20,6 +20,8 @@ class Task {
   final List<String> memberIds;
   final Map<String, bool> completions;
   final Map<String, Map<String, bool>> dateCompletions;
+  // subtaskCompletions: key = subtaskId (one-time) or subtaskId_YYYY-MM-DD (recurring)
+  final Map<String, bool> subtaskCompletions;
   final DateTime createdAt;
   final DateTime? endDate; // recurring tasks only — stops after this date
 
@@ -36,6 +38,7 @@ class Task {
     required this.memberIds,
     required this.completions,
     this.dateCompletions = const {},
+    this.subtaskCompletions = const {},
     required this.createdAt,
     this.endDate,
   });
@@ -109,6 +112,17 @@ class Task {
   int get completedCount =>
       memberIds.where((id) => completions[id] == true).length;
 
+  // Per-date subtask helpers
+  String _subtaskKey(String subtaskId, DateTime date) =>
+      isRecurring ? '${subtaskId}_${dateKey(date)}' : subtaskId;
+
+  bool isSubtaskDoneForDate(String subtaskId, DateTime date) =>
+      subtaskCompletions[_subtaskKey(subtaskId, date)] ?? false;
+
+  int subtasksDoneCountForDate(DateTime date) =>
+      subtasks.where((s) => isSubtaskDoneForDate(s.id, date)).length;
+
+  // Legacy (kept for backward compat)
   int get subtaskDoneCount => subtasks.where((s) => s.completed).length;
 
   static String dateKey(DateTime date) =>
@@ -134,6 +148,7 @@ class Task {
     List<String>? memberIds,
     Map<String, bool>? completions,
     Map<String, Map<String, bool>>? dateCompletions,
+    Map<String, bool>? subtaskCompletions,
     DateTime? endDate,
     bool clearEndDate = false,
   }) {
@@ -150,6 +165,7 @@ class Task {
       memberIds: memberIds ?? List.from(this.memberIds),
       completions: completions ?? Map.from(this.completions),
       dateCompletions: dateCompletions ?? _copyDateCompletions(),
+      subtaskCompletions: subtaskCompletions ?? Map.from(this.subtaskCompletions),
       createdAt: createdAt,
       endDate: clearEndDate ? null : (endDate ?? this.endDate),
     );
@@ -171,6 +187,7 @@ class Task {
         'memberIds': memberIds,
         'completions': completions,
         'dateCompletions': dateCompletions,
+        'subtaskCompletions': subtaskCompletions,
         'createdAt': createdAt.toIso8601String(),
         if (endDate != null) 'endDate': endDate!.toIso8601String(),
       };
@@ -198,6 +215,11 @@ class Task {
         memberIds: List<String>.from(json['memberIds'] as List),
         completions: Map<String, bool>.from(
           (json['completions'] as Map).map(
+            (k, v) => MapEntry(k as String, v as bool),
+          ),
+        ),
+        subtaskCompletions: Map<String, bool>.from(
+          (json['subtaskCompletions'] as Map? ?? {}).map(
             (k, v) => MapEntry(k as String, v as bool),
           ),
         ),

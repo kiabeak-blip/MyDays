@@ -206,16 +206,21 @@ class AppProvider extends ChangeNotifier {
     await _svc.setTask(_familyId!, updated);
   }
 
-  Future<void> toggleSubtask(String taskId, String subtaskId) async {
+  Future<void> toggleSubtask(String taskId, String subtaskId,
+      {DateTime? date}) async {
     if (_familyId == null) return;
     final idx = _tasks.indexWhere((t) => t.id == taskId);
     if (idx == -1) return;
     final task = _tasks[idx];
-    final newSubtasks = task.subtasks
-        .map((s) =>
-            s.id == subtaskId ? s.copyWith(completed: !s.completed) : s)
-        .toList();
-    await _svc.setTask(_familyId!, task.copyWith(subtasks: newSubtasks));
+    final d = date ?? DateTime.now();
+    final key = task.isRecurring
+        ? '${subtaskId}_${Task.dateKey(d)}'
+        : subtaskId;
+    final current = task.subtaskCompletions[key] ?? false;
+    final newCompletions = Map<String, bool>.from(task.subtaskCompletions)
+      ..[key] = !current;
+    await _svc.setTask(
+        _familyId!, task.copyWith(subtaskCompletions: newCompletions));
   }
 
   List<Task> getTasksForDate(DateTime date) =>

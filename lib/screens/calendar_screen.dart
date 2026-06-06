@@ -384,6 +384,7 @@ class _Section extends StatelessWidget {
               task: t,
               members: members.cast(),
               displayCompletions: t.completionsForDate(date),
+              date: date,
               onToggle: (mid) => onToggle(t.id, mid),
               onToggleSubtask: (sid) => onToggleSubtask(t.id, sid),
               onDelete: () => onDelete(t.id),

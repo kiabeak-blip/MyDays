@@ -9,6 +9,7 @@ class TaskCard extends StatelessWidget {
   final Task task;
   final List<FamilyMember> members;
   final Map<String, bool> displayCompletions;
+  final DateTime date;
   final void Function(String memberId) onToggle;
   final void Function(String subtaskId) onToggleSubtask;
   final VoidCallback onDelete;
@@ -20,6 +21,7 @@ class TaskCard extends StatelessWidget {
     required this.task,
     required this.members,
     required this.displayCompletions,
+    required this.date,
     required this.onToggle,
     required this.onToggleSubtask,
     required this.onDelete,
@@ -127,11 +129,12 @@ class TaskCard extends StatelessWidget {
                       const SizedBox(height: 6),
                       ...task.subtasks.map((s) => _SubtaskRow(
                             subtask: s,
+                            done: task.isSubtaskDoneForDate(s.id, date),
                             onToggle: () => onToggleSubtask(s.id),
                           )),
                       const SizedBox(height: 2),
                       Text(
-                        '${task.subtaskDoneCount}/${task.subtasks.length} steps done',
+                        '${task.subtasksDoneCountForDate(date)}/${task.subtasks.length} steps done',
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
                               color: cs.onSurfaceVariant,
                             ),
@@ -218,9 +221,14 @@ class TaskCard extends StatelessWidget {
 
 class _SubtaskRow extends StatelessWidget {
   final SubTask subtask;
+  final bool done;
   final VoidCallback onToggle;
 
-  const _SubtaskRow({required this.subtask, required this.onToggle});
+  const _SubtaskRow({
+    required this.subtask,
+    required this.done,
+    required this.onToggle,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -233,11 +241,9 @@ class _SubtaskRow extends StatelessWidget {
         child: Row(
           children: [
             Icon(
-              subtask.completed
-                  ? Icons.check_box
-                  : Icons.check_box_outline_blank,
+              done ? Icons.check_box : Icons.check_box_outline_blank,
               size: 18,
-              color: subtask.completed ? cs.primary : cs.onSurfaceVariant,
+              color: done ? cs.primary : cs.onSurfaceVariant,
             ),
             const SizedBox(width: 8),
             Expanded(
@@ -245,11 +251,8 @@ class _SubtaskRow extends StatelessWidget {
                 subtask.title,
                 style: TextStyle(
                   fontSize: 13,
-                  decoration:
-                      subtask.completed ? TextDecoration.lineThrough : null,
-                  color: subtask.completed
-                      ? cs.onSurfaceVariant
-                      : cs.onSurface,
+                  decoration: done ? TextDecoration.lineThrough : null,
+                  color: done ? cs.onSurfaceVariant : cs.onSurface,
                 ),
               ),
             ),

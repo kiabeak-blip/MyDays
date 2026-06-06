@@ -304,7 +304,7 @@ class _TaskRowState extends State<_TaskRow> {
         widget.task.completionsForDate(widget.date)[widget.member.id] == true;
     final cs = Theme.of(context).colorScheme;
     final hasSubtasks = widget.task.subtasks.isNotEmpty;
-    final doneSteps = widget.task.subtaskDoneCount;
+    final doneSteps = widget.task.subtasksDoneCountForDate(widget.date);
     final totalSteps = widget.task.subtasks.length;
 
     return Padding(
@@ -461,10 +461,11 @@ class _TaskRowState extends State<_TaskRow> {
                   color: cs.outlineVariant.withValues(alpha: 0.5)),
               ...widget.task.subtasks.map((s) => _SubtaskTile(
                     subtask: s,
+                    done: widget.task.isSubtaskDoneForDate(s.id, widget.date),
                     color: color,
                     onToggle: () => context
                         .read<AppProvider>()
-                        .toggleSubtask(widget.task.id, s.id),
+                        .toggleSubtask(widget.task.id, s.id, date: widget.date),
                   )),
               // Footer: progress + edit link
               Padding(
@@ -526,11 +527,13 @@ class _TaskRowState extends State<_TaskRow> {
 
 class _SubtaskTile extends StatelessWidget {
   final SubTask subtask;
+  final bool done;
   final Color color;
   final VoidCallback onToggle;
 
   const _SubtaskTile({
     required this.subtask,
+    required this.done,
     required this.color,
     required this.onToggle,
   });
@@ -548,12 +551,12 @@ class _SubtaskTile extends StatelessWidget {
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 180),
               child: Icon(
-                subtask.completed
+                done
                     ? Icons.check_circle_rounded
                     : Icons.radio_button_unchecked,
-                key: ValueKey(subtask.completed),
+                key: ValueKey(done),
                 size: 22,
-                color: subtask.completed
+                color: done
                     ? color
                     : cs.onSurfaceVariant.withValues(alpha: 0.5),
               ),
@@ -564,12 +567,8 @@ class _SubtaskTile extends StatelessWidget {
                 subtask.title,
                 style: TextStyle(
                   fontSize: 14,
-                  decoration: subtask.completed
-                      ? TextDecoration.lineThrough
-                      : null,
-                  color: subtask.completed
-                      ? cs.onSurfaceVariant
-                      : cs.onSurface,
+                  decoration: done ? TextDecoration.lineThrough : null,
+                  color: done ? cs.onSurfaceVariant : cs.onSurface,
                 ),
               ),
             ),
