@@ -10,6 +10,7 @@ import '../widgets/icon_picker.dart';
 
 class TaskFormScreen extends StatefulWidget {
   final Task? task;
+  final Task? duplicateFrom;
   final DateTime? initialDate;
   final TaskScope? initialScope;
   final RecurrenceType? initialRecurrence;
@@ -17,6 +18,7 @@ class TaskFormScreen extends StatefulWidget {
   const TaskFormScreen({
     super.key,
     this.task,
+    this.duplicateFrom,
     this.initialDate,
     this.initialScope,
     this.initialRecurrence,
@@ -40,21 +42,32 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   final _uuid = const Uuid();
 
   bool get _isEditing => widget.task != null;
+  bool get _isDuplicating => widget.duplicateFrom != null;
 
   @override
   void initState() {
     super.initState();
     final t = widget.task;
-    _titleCtrl = TextEditingController(text: t?.title ?? '');
-    _descCtrl = TextEditingController(text: t?.description ?? '');
+    final d = widget.duplicateFrom; // duplicate source
+    _titleCtrl = TextEditingController(text: t?.title ?? d?.title ?? '');
+    _descCtrl = TextEditingController(text: t?.description ?? d?.description ?? '');
     _scope = TaskScope.custom;
-    _recurrence =
-        t?.recurrence ?? widget.initialRecurrence ?? RecurrenceType.none;
+    _recurrence = t?.recurrence ?? d?.recurrence ??
+        widget.initialRecurrence ?? RecurrenceType.none;
     _referenceDate = t?.referenceDate ?? widget.initialDate ?? DateTime.now();
-    _customDates = t?.customDates != null ? List.from(t!.customDates) : [];
+    _customDates = t?.customDates != null
+        ? List.from(t!.customDates)
+        : d?.customDates != null
+            ? List.from(d!.customDates)
+            : [];
+    // Duplicate starts with no members selected so user picks fresh
     _selectedMemberIds = t != null ? Set.from(t.memberIds) : {};
-    _iconEmoji = t?.iconEmoji ?? '';
-    _subtasks = t?.subtasks != null ? List.from(t!.subtasks) : [];
+    _iconEmoji = t?.iconEmoji ?? d?.iconEmoji ?? '';
+    _subtasks = t?.subtasks != null
+        ? List.from(t!.subtasks)
+        : d?.subtasks != null
+            ? d!.subtasks.map((s) => SubTask(id: _uuid.v4(), title: s.title)).toList()
+            : [];
   }
 
   @override
@@ -71,7 +84,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditing ? 'Edit Task' : 'New Task'),
+        title: Text(_isEditing ? 'Edit Task' : _isDuplicating ? 'Duplicate Task' : 'New Task'),
         actions: [
           if (_isEditing)
             IconButton(

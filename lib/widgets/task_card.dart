@@ -13,6 +13,7 @@ class TaskCard extends StatelessWidget {
   final void Function(String subtaskId) onToggleSubtask;
   final VoidCallback onDelete;
   final VoidCallback onEdit;
+  final VoidCallback onDuplicate;
 
   const TaskCard({
     super.key,
@@ -23,6 +24,7 @@ class TaskCard extends StatelessWidget {
     required this.onToggleSubtask,
     required this.onDelete,
     required this.onEdit,
+    required this.onDuplicate,
   });
 
   @override
@@ -175,6 +177,16 @@ class TaskCard extends StatelessWidget {
                 onTap: () {
                   Navigator.pop(ctx);
                   onEdit();
+                },
+              ),
+            if (auth.canAddTasks)
+              ListTile(
+                leading: const Icon(Icons.copy_outlined),
+                title: const Text('Duplicate task'),
+                subtitle: const Text('Copy with new member/date'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  onDuplicate();
                 },
               ),
             if (auth.canDeleteTasks)

@@ -170,6 +170,12 @@ class _AllTasksScreenState extends State<AllTasksScreen> {
                                   builder: (_) =>
                                       TaskFormScreen(task: task)),
                             ),
+                            onDuplicate: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) =>
+                                      TaskFormScreen(duplicateFrom: task)),
+                            ),
                           ),
                         ],
                       );

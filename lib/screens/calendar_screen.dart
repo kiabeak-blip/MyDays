@@ -137,6 +137,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       provider.toggleSubtask(tid, sid),
                   onDelete: (tid) => provider.deleteTask(tid),
                   onEdit: (t) => _pushForm(context, task: t),
+                  onDuplicate: (t) => _duplicateTask(context, t),
                   onAdd: () =>
                       _pushForm(context, recurrence: RecurrenceType.daily),
                   addLabel: '+ Recurring',
@@ -153,6 +154,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       provider.toggleSubtask(tid, sid),
                   onDelete: (tid) => provider.deleteTask(tid),
                   onEdit: (t) => _pushForm(context, task: t),
+                  onDuplicate: (t) => _duplicateTask(context, t),
                   onAdd: () => _pushForm(context),
                 ),
                 const SizedBox(height: 80),
@@ -276,6 +278,18 @@ class _CalendarScreenState extends State<CalendarScreen> {
       ),
     );
   }
+
+  void _duplicateTask(BuildContext context, Task task) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TaskFormScreen(
+          duplicateFrom: task,
+          initialDate: _selectedDay,
+        ),
+      ),
+    );
+  }
 }
 
 // ── Section ───────────────────────────────────────────────────────────────
@@ -290,6 +304,7 @@ class _Section extends StatelessWidget {
   final void Function(String, String) onToggleSubtask;
   final void Function(String) onDelete;
   final void Function(Task) onEdit;
+  final void Function(Task) onDuplicate;
   final VoidCallback onAdd;
   final String addLabel;
 
@@ -303,6 +318,7 @@ class _Section extends StatelessWidget {
     required this.onToggleSubtask,
     required this.onDelete,
     required this.onEdit,
+    required this.onDuplicate,
     required this.onAdd,
     this.addLabel = 'Add',
   });
@@ -372,6 +388,7 @@ class _Section extends StatelessWidget {
               onToggleSubtask: (sid) => onToggleSubtask(t.id, sid),
               onDelete: () => onDelete(t.id),
               onEdit: () => onEdit(t),
+              onDuplicate: () => onDuplicate(t),
             ),
           ),
         const Divider(height: 1, indent: 16),
