@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../models/task.dart';
 import '../models/family_member.dart';
 import '../providers/auth_provider.dart' as ap;
@@ -167,6 +168,7 @@ class TaskCard extends StatelessWidget {
 
   void _showMenu(BuildContext context) {
     final auth = context.read<ap.AuthProvider>();
+    final l = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       builder: (ctx) => SafeArea(
@@ -176,7 +178,7 @@ class TaskCard extends StatelessWidget {
             if (auth.canEditTasks)
               ListTile(
                 leading: const Icon(Icons.edit_outlined),
-                title: const Text('Edit task'),
+                title: Text(l.editTask),
                 onTap: () {
                   Navigator.pop(ctx);
                   onEdit();
@@ -185,8 +187,8 @@ class TaskCard extends StatelessWidget {
             if (auth.canAddTasks)
               ListTile(
                 leading: const Icon(Icons.copy_outlined),
-                title: const Text('Duplicate task'),
-                subtitle: const Text('Copy with new member/date'),
+                title: Text(l.duplicateTask),
+                subtitle: Text(l.duplicateTaskSub),
                 onTap: () {
                   Navigator.pop(ctx);
                   onDuplicate();
@@ -196,7 +198,7 @@ class TaskCard extends StatelessWidget {
               ListTile(
                 leading: Icon(Icons.delete_outline,
                     color: Theme.of(ctx).colorScheme.error),
-                title: Text('Delete task',
+                title: Text(l.deleteTask,
                     style:
                         TextStyle(color: Theme.of(ctx).colorScheme.error)),
                 onTap: () {
@@ -205,10 +207,10 @@ class TaskCard extends StatelessWidget {
                 },
               ),
             if (!auth.canEditTasks && !auth.canDeleteTasks)
-              const ListTile(
-                leading: Icon(Icons.info_outline),
-                title: Text('No actions available'),
-                subtitle: Text('Ask a parent to edit or delete tasks'),
+              ListTile(
+                leading: const Icon(Icons.info_outline),
+                title: Text(l.noActionsAvailable),
+                subtitle: Text(l.askParentToEdit),
               ),
           ],
         ),

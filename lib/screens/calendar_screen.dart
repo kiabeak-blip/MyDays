@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/app_provider.dart';
 import '../providers/auth_provider.dart' as ap;
 import '../models/task.dart';
@@ -46,9 +47,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
         .where((t) => !t.isRecurring && t.appliesToDate(_selectedDay))
         .toList();
 
+    final l = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('MyDays'),
+        title: Text(l.appTitle),
       ),
       body: Column(
         children: [
@@ -126,7 +129,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             child: ListView(
               children: [
                 _Section(
-                  title: 'Recurring Tasks',
+                  title: l.recurringTasks,
                   subtitle: DateFormat('EEEE, MMM d').format(_selectedDay),
                   tasks: recurringTasks,
                   date: _selectedDay,
@@ -140,10 +143,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   onDuplicate: (t) => _duplicateTask(context, t),
                   onAdd: () =>
                       _pushForm(context, recurrence: RecurrenceType.daily),
-                  addLabel: '+ Recurring',
+                  addLabel: l.addRecurring,
                 ),
                 _Section(
-                  title: 'Tasks',
+                  title: l.tasks,
                   subtitle: DateFormat('EEEE, MMM d').format(_selectedDay),
                   tasks: oneDayTasks,
                   date: _selectedDay,
@@ -371,7 +374,7 @@ class _Section extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
             child: Text(
-              'No tasks',
+              AppLocalizations.of(context)!.noTasks,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: cs.onSurfaceVariant,
                     fontStyle: FontStyle.italic,

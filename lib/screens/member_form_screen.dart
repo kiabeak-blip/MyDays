@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../models/family_member.dart';
 import '../providers/app_provider.dart';
 
@@ -60,15 +61,16 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final l = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditing ? 'Edit Member' : 'Add Member'),
+        title: Text(_isEditing ? l.editMember : l.addMember),
         actions: [
           if (_isEditing)
             IconButton(
               icon: const Icon(Icons.delete_outline),
-              tooltip: 'Remove member',
+              tooltip: l.removeMember,
               onPressed: _delete,
             ),
         ],
@@ -104,30 +106,30 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
             const SizedBox(height: 24),
             TextFormField(
               controller: _nameCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Name *',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l.nameLabel,
+                border: const OutlineInputBorder(),
               ),
               autofocus: !_isEditing,
               textCapitalization: TextCapitalization.words,
               validator: (v) => v == null || v.trim().isEmpty
-                  ? 'Please enter a name'
+                  ? l.nameValidation
                   : null,
             ),
             const SizedBox(height: 24),
-            Text('Role', style: Theme.of(context).textTheme.titleSmall),
+            Text(l.role, style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 8),
             SegmentedButton<MemberRole>(
-              segments: const [
+              segments: [
                 ButtonSegment(
                   value: MemberRole.child,
-                  icon: Icon(Icons.child_care_outlined),
-                  label: Text('Child'),
+                  icon: const Icon(Icons.child_care_outlined),
+                  label: Text(l.childRole),
                 ),
                 ButtonSegment(
                   value: MemberRole.parent,
-                  icon: Icon(Icons.admin_panel_settings_outlined),
-                  label: Text('Parent'),
+                  icon: const Icon(Icons.admin_panel_settings_outlined),
+                  label: Text(l.parentRole),
                 ),
               ],
               selected: {_selectedRole},
@@ -135,7 +137,7 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
                   setState(() => _selectedRole = s.first),
             ),
             const SizedBox(height: 24),
-            Text('Colour', style: Theme.of(context).textTheme.titleSmall),
+            Text(l.colour, style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 12),
             Wrap(
               spacing: 12,
@@ -173,7 +175,7 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
           padding: const EdgeInsets.all(16),
           child: FilledButton(
             onPressed: _save,
-            child: Text(_isEditing ? 'Save Changes' : 'Add Member'),
+            child: Text(_isEditing ? l.saveChanges : l.addMember),
           ),
         ),
       ),
@@ -253,22 +255,24 @@ class _MemberFormScreenState extends State<MemberFormScreen> {
   Future<void> _delete() async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Remove member?'),
-        content: Text(
-            '${widget.member!.name} will be removed from all tasks. This cannot be undone.'),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(
-                backgroundColor: Theme.of(ctx).colorScheme.error),
-            child: const Text('Remove'),
-          ),
-        ],
-      ),
+      builder: (ctx) {
+        final ll = AppLocalizations.of(ctx)!;
+        return AlertDialog(
+          title: Text(ll.removeMember),
+          content: Text(ll.removeMemberConfirm(widget.member!.name)),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(ll.cancel)),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              style: FilledButton.styleFrom(
+                  backgroundColor: Theme.of(ctx).colorScheme.error),
+              child: Text(ll.remove),
+            ),
+          ],
+        );
+      },
     );
     if (confirmed == true && mounted) {
       final nav = Navigator.of(context);

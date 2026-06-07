@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
+import '../l10n/app_localizations.dart';
 import '../models/task.dart';
 import '../providers/app_provider.dart';
 import '../widgets/member_avatar.dart';
@@ -81,10 +82,11 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   Widget build(BuildContext context) {
     final provider = context.watch<AppProvider>();
     final cs = Theme.of(context).colorScheme;
+    final l = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditing ? 'Edit Task' : _isDuplicating ? 'Duplicate Task' : 'New Task'),
+        title: Text(_isEditing ? l.editTask : _isDuplicating ? l.duplicateTask : l.newTask),
         actions: [
           if (_isEditing)
             IconButton(
@@ -133,14 +135,14 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 Expanded(
                   child: TextFormField(
                     controller: _titleCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Task title *',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l.taskTitleLabel,
+                      border: const OutlineInputBorder(),
                     ),
                     autofocus: !_isEditing,
                     textCapitalization: TextCapitalization.sentences,
                     validator: (v) => v == null || v.trim().isEmpty
-                        ? 'Please enter a title'
+                        ? l.taskTitleValidation
                         : null,
                   ),
                 ),
@@ -156,9 +158,9 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _descCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Short description (optional)',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l.descriptionOptional,
+                border: const OutlineInputBorder(),
               ),
               textCapitalization: TextCapitalization.sentences,
               maxLines: 2,
@@ -167,13 +169,13 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
             const SizedBox(height: 20),
             Row(
               children: [
-                Text('Checklist',
+                Text(l.checklist,
                     style: Theme.of(context).textTheme.titleSmall),
                 const Spacer(),
                 TextButton.icon(
                   onPressed: _addSubtask,
                   icon: const Icon(Icons.add, size: 16),
-                  label: const Text('Add step'),
+                  label: Text(l.addStep),
                   style: TextButton.styleFrom(
                       visualDensity: VisualDensity.compact),
                 ),
@@ -209,7 +211,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
               Padding(
                 padding: const EdgeInsets.only(left: 2, bottom: 4),
                 child: Text(
-                  'Add steps for a young child to follow one by one',
+                  l.checklistHint,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: cs.onSurfaceVariant,
                         fontStyle: FontStyle.italic,
@@ -218,7 +220,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
               ),
             const SizedBox(height: 24),
             // ── Recurrence ──────────────────────────────────────────────
-            Text('Repeats',
+            Text(l.repeats,
                 style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 8),
             Wrap(
@@ -226,35 +228,35 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
               runSpacing: 8,
               children: [
                 _RecurrenceChip(
-                  label: 'One-time',
+                  label: l.oneTime,
                   icon: Icons.looks_one_outlined,
                   selected: _recurrence == RecurrenceType.none,
                   onTap: () =>
                       setState(() => _recurrence = RecurrenceType.none),
                 ),
                 _RecurrenceChip(
-                  label: 'Daily',
+                  label: l.daily,
                   icon: Icons.repeat,
                   selected: _recurrence == RecurrenceType.daily,
                   onTap: () =>
                       setState(() => _recurrence = RecurrenceType.daily),
                 ),
                 _RecurrenceChip(
-                  label: 'Alt Day',
+                  label: l.altDay,
                   icon: Icons.repeat_one,
                   selected: _recurrence == RecurrenceType.everyOtherDay,
                   onTap: () =>
                       setState(() => _recurrence = RecurrenceType.everyOtherDay),
                 ),
                 _RecurrenceChip(
-                  label: 'Mon – Fri',
+                  label: l.monFri,
                   icon: Icons.date_range,
                   selected: _recurrence == RecurrenceType.weekdays,
                   onTap: () =>
                       setState(() => _recurrence = RecurrenceType.weekdays),
                 ),
                 _RecurrenceChip(
-                  label: 'Weekly',
+                  label: l.weekly,
                   icon: Icons.view_week,
                   selected: _recurrence == RecurrenceType.weekly,
                   onTap: () =>
@@ -267,7 +269,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: Icon(Icons.today, color: cs.primary),
-                title: const Text('Starts from'),
+                title: Text(l.startsFrom),
                 subtitle: Text(
                   DateFormat('EEEE, MMMM d, yyyy').format(_referenceDate),
                   style: TextStyle(
@@ -283,7 +285,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
             ],
             if (_recurrence == RecurrenceType.none) ...[
               const SizedBox(height: 24),
-              Text('Select days',
+              Text(l.selectDays,
                   style: Theme.of(context).textTheme.titleSmall),
               const SizedBox(height: 8),
               _CustomDateTile(
@@ -293,12 +295,12 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
               ),
             ], // end if recurrence == none
             const SizedBox(height: 24),
-            Text('Assign to family members',
+            Text(l.assignToMembers,
                 style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 8),
             if (provider.members.isEmpty)
               Text(
-                'No family members yet — add them from the Members tab.',
+                l.noMembersYet,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: cs.onSurfaceVariant,
                       fontStyle: FontStyle.italic,
@@ -329,7 +331,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           padding: const EdgeInsets.all(16),
           child: FilledButton(
             onPressed: _canSave ? _save : null,
-            child: Text(_isEditing ? 'Save Changes' : 'Add Task'),
+            child: Text(_isEditing ? l.saveChanges : l.addTask),
           ),
         ),
       ),
@@ -381,25 +383,24 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
 
       // For recurring tasks, ask whether to apply to all or only today & future
       if (existing.isRecurring && mounted) {
+        final ll = AppLocalizations.of(context)!;
         final choice = await showDialog<String>(
           context: context,
           builder: (ctx) => AlertDialog(
-            title: const Text('Apply changes to…'),
-            content: const Text(
-              'This is a recurring task. Do you want to update all occurrences, or only today and future dates?',
-            ),
+            title: Text(ll.applyChangesTo),
+            content: Text(ll.applyChangesDesc),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx, 'cancel'),
-                child: const Text('Cancel'),
+                child: Text(ll.cancel),
               ),
               OutlinedButton(
                 onPressed: () => Navigator.pop(ctx, 'all'),
-                child: const Text('All occurrences'),
+                child: Text(ll.allOccurrences),
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(ctx, 'forward'),
-                child: const Text('Today & future'),
+                child: Text(ll.todayAndFuture),
               ),
             ],
           ),
@@ -464,21 +465,24 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   Future<void> _delete() async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete task?'),
-        content: const Text('This cannot be undone.'),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(
-                backgroundColor: Theme.of(ctx).colorScheme.error),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
+      builder: (ctx) {
+        final ll = AppLocalizations.of(ctx)!;
+        return AlertDialog(
+          title: Text(ll.deleteTask),
+          content: Text(ll.deleteTaskConfirm),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(ll.cancel)),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              style: FilledButton.styleFrom(
+                  backgroundColor: Theme.of(ctx).colorScheme.error),
+              child: Text(ll.delete),
+            ),
+          ],
+        );
+      },
     );
     if (confirmed == true && mounted) {
       final nav = Navigator.of(context);

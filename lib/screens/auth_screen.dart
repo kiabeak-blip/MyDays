@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/auth_provider.dart' as ap;
 
 class AuthScreen extends StatefulWidget {
@@ -30,6 +31,7 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final l = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: SafeArea(
@@ -41,7 +43,6 @@ class _AuthScreenState extends State<AuthScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Logo
                   Container(
                     width: 80,
                     height: 80,
@@ -55,7 +56,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'MyDays',
+                    l.appTitle,
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: cs.primary,
@@ -69,14 +70,13 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   const SizedBox(height: 40),
 
-                  // Google Sign In (desktop only)
                   if (!kIsWeb) ...[
                     FilledButton.icon(
                       onPressed: _loading ? null : _signInGoogle,
                       icon: const Text('G',
                           style: TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 16)),
-                      label: const Text('Continue with Google'),
+                      label: Text(l.signInWithGoogle),
                       style: FilledButton.styleFrom(
                         minimumSize: const Size.fromHeight(48),
                         backgroundColor: Colors.white,
@@ -98,7 +98,6 @@ class _AuthScreenState extends State<AuthScreen> {
                     const SizedBox(height: 20),
                   ],
 
-                  // Email / Password form
                   Form(
                     key: _formKey,
                     child: Column(
@@ -107,10 +106,10 @@ class _AuthScreenState extends State<AuthScreen> {
                         TextFormField(
                           controller: _emailCtrl,
                           keyboardType: TextInputType.emailAddress,
-                          decoration: const InputDecoration(
-                            labelText: 'Email',
-                            prefixIcon: Icon(Icons.email_outlined),
-                            border: OutlineInputBorder(),
+                          decoration: InputDecoration(
+                            labelText: l.emailLabel,
+                            prefixIcon: const Icon(Icons.email_outlined),
+                            border: const OutlineInputBorder(),
                           ),
                           validator: (v) =>
                               (v == null || !v.contains('@'))
@@ -122,16 +121,13 @@ class _AuthScreenState extends State<AuthScreen> {
                           controller: _passCtrl,
                           obscureText: _obscurePass,
                           decoration: InputDecoration(
-                            labelText: 'Password',
+                            labelText: l.passwordLabel,
                             prefixIcon: const Icon(Icons.lock_outlined),
                             border: const OutlineInputBorder(),
                             suffixIcon: IconButton(
                               icon: Icon(_obscurePass
                                   ? Icons.visibility_outlined
                                   : Icons.visibility_off_outlined),
-                              tooltip: _obscurePass
-                                  ? 'Show password'
-                                  : 'Hide password',
                               onPressed: () =>
                                   setState(() => _obscurePass = !_obscurePass),
                             ),
@@ -141,7 +137,6 @@ class _AuthScreenState extends State<AuthScreen> {
                               : null,
                         ),
 
-                        // Forgot password (sign-in mode only)
                         if (!_isRegister)
                           Align(
                             alignment: Alignment.centerRight,
@@ -150,7 +145,7 @@ class _AuthScreenState extends State<AuthScreen> {
                               style: TextButton.styleFrom(
                                   visualDensity: VisualDensity.compact,
                                   padding: EdgeInsets.zero),
-                              child: const Text('Forgot password?'),
+                              child: Text(l.forgotPassword),
                             ),
                           ),
 
@@ -158,8 +153,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           const SizedBox(height: 4),
                           Text(
                             _error!,
-                            style:
-                                TextStyle(color: cs.error, fontSize: 13),
+                            style: TextStyle(color: cs.error, fontSize: 13),
                             textAlign: TextAlign.center,
                           ),
                         ],
@@ -177,9 +171,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                       strokeWidth: 2,
                                       color: Colors.white),
                                 )
-                              : Text(_isRegister
-                                  ? 'Create Account'
-                                  : 'Sign In'),
+                              : Text(_isRegister ? l.createAccount : l.signIn),
                         ),
                       ],
                     ),
@@ -191,8 +183,8 @@ class _AuthScreenState extends State<AuthScreen> {
                       _error = null;
                     }),
                     child: Text(_isRegister
-                        ? 'Already have an account? Sign in'
-                        : 'New here? Create an account'),
+                        ? l.alreadyHaveAccount
+                        : l.noAccount),
                   ),
                 ],
               ),
@@ -203,61 +195,43 @@ class _AuthScreenState extends State<AuthScreen> {
     );
   }
 
-  // ── Actions ──────────────────────────────────────────────────────────────
-
   Future<void> _signInGoogle() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-    final err =
-        await context.read<ap.AuthProvider>().signInWithGoogle();
-    if (mounted) setState(() {
-      _loading = false;
-      _error = err;
-    });
+    setState(() { _loading = true; _error = null; });
+    final err = await context.read<ap.AuthProvider>().signInWithGoogle();
+    if (mounted) setState(() { _loading = false; _error = err; });
   }
 
   Future<void> _submitEmail() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+    setState(() { _loading = true; _error = null; });
     final auth = context.read<ap.AuthProvider>();
     final err = _isRegister
-        ? await auth.registerWithEmail(
-            _emailCtrl.text.trim(), _passCtrl.text)
-        : await auth.signInWithEmail(
-            _emailCtrl.text.trim(), _passCtrl.text);
-    if (mounted) setState(() {
-      _loading = false;
-      _error = err;
-    });
+        ? await auth.registerWithEmail(_emailCtrl.text.trim(), _passCtrl.text)
+        : await auth.signInWithEmail(_emailCtrl.text.trim(), _passCtrl.text);
+    if (mounted) setState(() { _loading = false; _error = err; });
   }
 
   Future<void> _forgotPassword() async {
-    final resetEmail = _emailCtrl.text.trim();
-    final emailCtrl  = TextEditingController(text: resetEmail);
+    final l = AppLocalizations.of(context)!;
+    final emailCtrl = TextEditingController(text: _emailCtrl.text.trim());
 
     final submitted = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Reset password'),
+        title: Text(l.forgotPassword),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-                'Enter your email and we\'ll send a reset link.'),
+            const Text("Enter your email and we'll send a reset link."),
             const SizedBox(height: 12),
             TextField(
               controller: emailCtrl,
               keyboardType: TextInputType.emailAddress,
               autofocus: true,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                prefixIcon: Icon(Icons.email_outlined),
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l.emailLabel,
+                prefixIcon: const Icon(Icons.email_outlined),
+                border: const OutlineInputBorder(),
               ),
             ),
           ],
@@ -265,11 +239,11 @@ class _AuthScreenState extends State<AuthScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, emailCtrl.text.trim()),
-            child: const Text('Send reset link'),
+            child: Text(l.sendResetLink),
           ),
         ],
       ),
@@ -278,8 +252,7 @@ class _AuthScreenState extends State<AuthScreen> {
     emailCtrl.dispose();
     if (submitted == null || submitted.isEmpty || !mounted) return;
 
-    final err =
-        await context.read<ap.AuthProvider>().sendPasswordReset(submitted);
+    final err = await context.read<ap.AuthProvider>().sendPasswordReset(submitted);
     if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(

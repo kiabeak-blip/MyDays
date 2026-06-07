@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import '../l10n/app_localizations.dart';
 import '../models/family_member.dart';
 import '../models/task.dart';
 import '../providers/app_provider.dart';
@@ -126,11 +127,11 @@ class _MemberTasksScreenState extends State<MemberTasksScreen> {
                         children: [
                           Text(
                             _isToday
-                                ? 'Today'
+                                ? AppLocalizations.of(context)!.today
                                 : _isYesterday
-                                    ? 'Yesterday'
+                                    ? AppLocalizations.of(context)!.yesterday
                                     : _isTomorrow
-                                        ? 'Tomorrow'
+                                        ? AppLocalizations.of(context)!.tomorrow
                                         : DateFormat('EEEE')
                                             .format(_date),
                             style: TextStyle(
@@ -177,10 +178,10 @@ class _MemberTasksScreenState extends State<MemberTasksScreen> {
                       padding: const EdgeInsets.only(bottom: 80),
                       children: [
                         if (recurring.isNotEmpty) ...[
-                          const _SectionHeader(
-                              label: 'Recurring',
+                          _SectionHeader(
+                              label: AppLocalizations.of(context)!.recurringTasks,
                               icon: Icons.repeat,
-                              color: Color(0xFF43A047)),
+                              color: const Color(0xFF43A047)),
                           ...recurring.map((t) => _TaskRow(
                                 task: t,
                                 member: member,
@@ -193,7 +194,7 @@ class _MemberTasksScreenState extends State<MemberTasksScreen> {
                         ],
                         if (oneTime.isNotEmpty) ...[
                           _SectionHeader(
-                              label: 'Scheduled',
+                              label: AppLocalizations.of(context)!.scheduled,
                               icon: Icons.event,
                               color: cs.primary),
                           ...oneTime.map((t) => _TaskRow(
@@ -633,8 +634,8 @@ class _EmptyState extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             isWeekend
-                ? 'No tasks — enjoy the weekend!'
-                : 'No tasks for ${member.name} today',
+                ? AppLocalizations.of(context)!.enjoyWeekend
+                : AppLocalizations.of(context)!.noTasksForMember(member.name),
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
@@ -643,7 +644,7 @@ class _EmptyState extends StatelessWidget {
           FilledButton.icon(
             onPressed: onAdd,
             icon: const Icon(Icons.add),
-            label: const Text('Add a task'),
+            label: Text(AppLocalizations.of(context)!.addTask),
           ),
         ],
       ),

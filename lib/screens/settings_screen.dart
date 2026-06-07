@@ -16,12 +16,14 @@ class SettingsScreen extends StatelessWidget {
     final auth = context.watch<ap.AuthProvider>();
     final errorColor = Theme.of(context).colorScheme.error;
 
+    final l = AppLocalizations.of(context)!;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(title: Text(l.settings)),
       body: ListView(
         children: [
           // ── Account ───────────────────────────────────────────────────
-          const _SectionHeader(label: 'Account'),
+          _SectionHeader(label: l.navSettings),
           ListTile(
             leading: const Icon(Icons.person_outline),
             title: const Text('Signed in as'),
@@ -31,36 +33,35 @@ class SettingsScreen extends StatelessWidget {
             leading: Icon(auth.isParent
                 ? Icons.admin_panel_settings_outlined
                 : Icons.child_care_outlined),
-            title: const Text('Role'),
-            subtitle: Text(auth.isParent ? 'Parent (admin)' : 'Child'),
+            title: Text(l.role),
+            subtitle: Text(auth.isParent ? l.parentRole : l.childRole),
           ),
 
           // ── Family (parents only) ─────────────────────────────────────
           if (auth.isParent) ...[
-            const _SectionHeader(label: 'Family'),
+            _SectionHeader(label: l.familySettings),
             _InviteCodeTile(familyId: auth.familyId!),
             SwitchListTile(
               secondary: const Icon(Icons.add_task_outlined),
-              title: const Text('Children can add tasks'),
-              subtitle: const Text('When off, only parents can create tasks'),
+              title: Text(l.allowChildAddTasks),
               value: auth.allowChildAddTasks,
               onChanged: (v) => auth.updateAllowChildAddTasks(v),
             ),
           ],
 
           // ── Appearance ────────────────────────────────────────────────
-          const _SectionHeader(label: 'Appearance'),
+          _SectionHeader(label: l.appearance),
           const _AppearanceSection(),
 
           // ── Language ──────────────────────────────────────────────────
-          const _SectionHeader(label: 'Language'),
+          _SectionHeader(label: l.language),
           const _LanguageSection(),
 
           // ── Session ───────────────────────────────────────────────────
-          const _SectionHeader(label: 'Session'),
+          _SectionHeader(label: 'Session'),
           ListTile(
             leading: Icon(Icons.logout, color: errorColor),
-            title: Text('Sign out', style: TextStyle(color: errorColor)),
+            title: Text(l.signOut, style: TextStyle(color: errorColor)),
             onTap: () => _confirmSignOut(context, auth),
           ),
         ],
@@ -72,21 +73,24 @@ class SettingsScreen extends StatelessWidget {
       BuildContext context, ap.AuthProvider auth) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Sign out?'),
-        content: const Text(
-            'You will need to sign in again to access your family data.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Sign out'),
-          ),
-        ],
-      ),
+      builder: (ctx) {
+        final ll = AppLocalizations.of(ctx)!;
+        return AlertDialog(
+          title: Text(ll.signOut),
+          content: const Text(
+              'You will need to sign in again to access your family data.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(ll.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(ll.signOut),
+            ),
+          ],
+        );
+      },
     );
     if (confirmed == true && context.mounted) {
       await auth.signOut();
