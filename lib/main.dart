@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'l10n/app_localizations.dart';
 import 'providers/app_provider.dart';
 import 'providers/auth_provider.dart' as ap;
+import 'providers/locale_provider.dart';
 import 'providers/theme_provider.dart';
 import 'screens/auth_screen.dart';
 import 'screens/family_setup_screen.dart';
@@ -18,6 +21,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ap.AuthProvider()),
         ChangeNotifierProvider(create: (_) => AppProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => LocaleProvider()),
       ],
       child: const MyDaysApp(),
     ),
@@ -30,12 +34,21 @@ class MyDaysApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeProv = context.watch<ThemeProvider>();
+    final localeProv = context.watch<LocaleProvider>();
     return MaterialApp(
       title: 'MyDays',
       debugShowCheckedModeBanner: false,
       themeMode: themeProv.themeMode,
       theme: themeProv.buildTheme(Brightness.light),
       darkTheme: themeProv.buildTheme(Brightness.dark),
+      locale: localeProv.locale,
+      supportedLocales: LocaleProvider.supportedLocales,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       home: const _AppRouter(),
     );
   }
@@ -73,7 +86,8 @@ class _AppRouterState extends State<_AppRouter> {
           body: Center(child: CircularProgressIndicator()),
         ),
       ap.AuthStatus.unauthenticated => const AuthScreen(key: ValueKey('auth')),
-      ap.AuthStatus.noFamily => const FamilySetupScreen(key: ValueKey('setup')),
+      ap.AuthStatus.noFamily =>
+        const FamilySetupScreen(key: ValueKey('setup')),
       ap.AuthStatus.ready => const MainScreen(key: ValueKey('main')),
     };
   }

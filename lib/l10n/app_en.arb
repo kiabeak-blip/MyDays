@@ -1,0 +1,160 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "MyDays",
+  "@appTitle": { "description": "App name" },
+
+  "navCalendar": "Calendar",
+  "navMembers": "Members",
+  "navAssistant": "Assistant",
+  "navSettings": "Settings",
+  "navMyTasks": "My Tasks",
+
+  "today": "Today",
+  "yesterday": "Yesterday",
+  "tomorrow": "Tomorrow",
+
+  "recurringTasks": "Recurring Tasks",
+  "scheduled": "Scheduled",
+  "tasks": "Tasks",
+  "noTasks": "No tasks",
+  "noTasksForMember": "No tasks for {name} today",
+  "@noTasksForMember": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "enjoyWeekend": "No tasks — enjoy the weekend!",
+
+  "addTask": "Add Task",
+  "editTask": "Edit Task",
+  "newTask": "New Task",
+  "duplicateTask": "Duplicate Task",
+  "duplicateTaskSub": "Copy with new member/date",
+  "deleteTask": "Delete task",
+  "deleteTaskConfirm": "This cannot be undone.",
+  "applyChangesTo": "Apply changes to…",
+  "applyChangesDesc": "This is a recurring task. Do you want to update all occurrences, or only today and future dates?",
+  "allOccurrences": "All occurrences",
+  "todayAndFuture": "Today & future",
+
+  "taskTitleLabel": "Task title *",
+  "taskTitleValidation": "Please enter a title",
+  "descriptionOptional": "Short description (optional)",
+  "checklist": "Checklist",
+  "addStep": "+ Add step",
+  "checklistHint": "Add steps for a young child to follow one by one",
+  "stepDescription": "Step description…",
+  "stepsDone": "{done}/{total} steps done",
+  "@stepsDone": {
+    "placeholders": {
+      "done": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "steps": "{done} / {total} steps",
+  "@steps": {
+    "placeholders": {
+      "done": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "repeats": "Repeats",
+  "oneTime": "One-time",
+  "daily": "Daily",
+  "altDay": "Alt Day",
+  "monFri": "Mon – Fri",
+  "weekly": "Weekly",
+  "startsFrom": "Starts from",
+  "selectDays": "Select days",
+  "tapToSelectDays": "Tap to select specific days",
+  "daysSelected": "{count} day selected",
+  "@daysSelected": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "assignToMembers": "Assign to family members",
+  "noMembersYet": "No family members yet — add them from the Members tab.",
+
+  "saveChanges": "Save Changes",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "save": "Save",
+  "edit": "Edit",
+  "add": "Add",
+  "remove": "Remove",
+  "confirm": "Confirm",
+
+  "signIn": "Sign in",
+  "createAccount": "Create account",
+  "emailLabel": "Email",
+  "passwordLabel": "Password",
+  "signInWithGoogle": "Sign in with Google",
+  "forgotPassword": "Forgot password?",
+  "sendResetLink": "Send reset link",
+  "alreadyHaveAccount": "Already have an account? Sign in",
+  "noAccount": "Don't have an account? Register",
+
+  "familyName": "Family name",
+  "createFamily": "Create Family",
+  "joinFamily": "Join Family",
+  "inviteCode": "Invite code",
+  "joinWithCode": "Join with code",
+
+  "members": "Members",
+  "addMember": "Add Member",
+  "editMember": "Edit Member",
+  "removeMember": "Remove member?",
+  "removeMemberConfirm": "{name} will be removed from all tasks. This cannot be undone.",
+  "@removeMemberConfirm": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "nameLabel": "Name *",
+  "nameValidation": "Please enter a name",
+  "role": "Role",
+  "childRole": "Child",
+  "parentRole": "Parent",
+  "colour": "Colour",
+  "avatar": "Choose avatar",
+  "doneToday": "{done} / {total} done today",
+  "@doneToday": {
+    "placeholders": {
+      "done": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "settings": "Settings",
+  "appearance": "Appearance",
+  "language": "Language",
+  "darkMode": "Dark Mode",
+  "lightMode": "Light Mode",
+  "themeColour": "Theme colour",
+  "memberColours": "Member colours",
+  "familySettings": "Family",
+  "allowChildAddTasks": "Allow children to add tasks",
+  "inviteMembers": "Invite members",
+  "inviteCode2": "Invite Code",
+  "signOut": "Sign out",
+
+  "assistant": "Assistant",
+  "assistantGreeting": "Hi! I'm your family assistant 👋 I can help you manage tasks, check schedules, and create new tasks. What would you like to do?",
+  "setApiKey": "Set API key",
+  "apiKeyTitle": "Anthropic API Key",
+  "apiKeyDesc": "Enter your Claude API key from console.anthropic.com. It's stored only on this device.",
+  "apiKeyHint": "sk-ant-…",
+  "addApiKeyBanner": "Add your Claude API key to enable the assistant.",
+  "askMeAnything": "Ask me anything…",
+  "setApiKeyToStart": "Set your API key to start",
+
+  "weekView": "Week view",
+  "monthView": "Month view",
+  "week": "Week",
+  "month": "Month",
+
+  "addTaskBtn": "+ Add task",
+  "addRecurring": "+ Recurring",
+
+  "tapIconToAdd": "Tap the box to add an icon",
+  "noActionsAvailable": "No actions available",
+  "askParentToEdit": "Ask a parent to edit or delete tasks"
+}

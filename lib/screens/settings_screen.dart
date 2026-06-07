@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/app_provider.dart';
 import '../providers/auth_provider.dart' as ap;
+import '../providers/locale_provider.dart';
 import '../providers/theme_provider.dart';
 import '../services/firebase_service.dart';
 
@@ -50,6 +52,10 @@ class SettingsScreen extends StatelessWidget {
           const _SectionHeader(label: 'Appearance'),
           const _AppearanceSection(),
 
+          // ── Language ──────────────────────────────────────────────────
+          const _SectionHeader(label: 'Language'),
+          const _LanguageSection(),
+
           // ── Session ───────────────────────────────────────────────────
           const _SectionHeader(label: 'Session'),
           ListTile(
@@ -85,6 +91,53 @@ class SettingsScreen extends StatelessWidget {
     if (confirmed == true && context.mounted) {
       await auth.signOut();
     }
+  }
+}
+
+// ── Language section ───────────────────────────────────────────────────────
+
+class _LanguageSection extends StatelessWidget {
+  const _LanguageSection();
+
+  @override
+  Widget build(BuildContext context) {
+    final localeProv = context.watch<LocaleProvider>();
+    final cs = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: LocaleProvider.supportedLocales.map((locale) {
+          final selected = localeProv.locale.languageCode == locale.languageCode;
+          final name = LocaleProvider.languageNames[locale.languageCode] ?? locale.languageCode;
+          return GestureDetector(
+            onTap: () => localeProv.setLocale(locale),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: selected ? cs.primaryContainer : cs.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: selected ? cs.primary : Colors.transparent,
+                  width: 1.5,
+                ),
+              ),
+              child: Text(
+                name,
+                style: TextStyle(
+                  fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+                  color: selected ? cs.onPrimaryContainer : cs.onSurfaceVariant,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
   }
 }
 
