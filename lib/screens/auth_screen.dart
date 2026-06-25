@@ -32,6 +32,8 @@ class _AuthScreenState extends State<AuthScreen> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final l = AppLocalizations.of(context)!;
+    final providerError = context.watch<ap.AuthProvider>().loadError;
+    final displayError = _error ?? providerError;
 
     return Scaffold(
       body: SafeArea(
@@ -149,10 +151,10 @@ class _AuthScreenState extends State<AuthScreen> {
                             ),
                           ),
 
-                        if (_error != null) ...[
+                        if (displayError != null) ...[
                           const SizedBox(height: 4),
                           Text(
-                            _error!,
+                            displayError,
                             style: TextStyle(color: cs.error, fontSize: 13),
                             textAlign: TextAlign.center,
                           ),

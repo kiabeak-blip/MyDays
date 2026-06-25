@@ -20,6 +20,7 @@ class AuthProvider extends ChangeNotifier {
   String? _memberId;
   MemberRole _role = MemberRole.child;
   bool _allowChildAddTasks = false;
+  String? _loadError;
 
   StreamSubscription? _familySubscription;
 
@@ -30,6 +31,7 @@ class AuthProvider extends ChangeNotifier {
   MemberRole get role => _role;
   bool get isParent => _role == MemberRole.parent;
   bool get allowChildAddTasks => _allowChildAddTasks;
+  String? get loadError => _loadError;
   bool get canAddTasks => isParent || _allowChildAddTasks;
   bool get canDeleteTasks => isParent;
   bool get canManageMembers => isParent;
@@ -51,36 +53,48 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> _loadFamily(String uid) async {
-    final record = await _svc.getUserRecord(uid);
-    if (record == null) {
+    _loadError = null;
+    try {
+      final record = await _svc
+          .getUserRecord(uid)
+          .timeout(const Duration(seconds: 15));
+      if (record == null) {
+        _clearFamily();
+        _status = AuthStatus.noFamily;
+        notifyListeners();
+        return;
+      }
+
+      _familyId = record['familyId'] as String;
+      _memberId = record['memberId'] as String?;
+
+      // Check if this member's record has isParent = true
+      bool memberIsParent = false;
+      if (_memberId != null) {
+        final member = await _svc
+            .getMember(_familyId!, _memberId!)
+            .timeout(const Duration(seconds: 15));
+        memberIsParent = member?.isParent ?? false;
+      }
+
+      _familySubscription?.cancel();
+      _familySubscription = _svc.watchFamily(_familyId!).listen((settings) {
+        if (settings == null) return;
+        _allowChildAddTasks = settings.allowChildAddTasks;
+        _role = (settings.ownerUid == uid || memberIsParent)
+            ? MemberRole.parent
+            : MemberRole.child;
+        notifyListeners();
+      });
+
+      _status = AuthStatus.ready;
+      notifyListeners();
+    } catch (e) {
       _clearFamily();
-      _status = AuthStatus.noFamily;
+      _status = AuthStatus.unauthenticated;
+      _loadError = 'Could not load your account: ${e.toString().replaceAll('Exception: ', '')}. Please check your connection and try again.';
       notifyListeners();
-      return;
     }
-
-    _familyId = record['familyId'] as String;
-    _memberId = record['memberId'] as String?;
-
-    // Check if this member's record has isParent = true
-    bool memberIsParent = false;
-    if (_memberId != null) {
-      final member = await _svc.getMember(_familyId!, _memberId!);
-      memberIsParent = member?.isParent ?? false;
-    }
-
-    _familySubscription?.cancel();
-    _familySubscription = _svc.watchFamily(_familyId!).listen((settings) {
-      if (settings == null) return;
-      _allowChildAddTasks = settings.allowChildAddTasks;
-      _role = (settings.ownerUid == uid || memberIsParent)
-          ? MemberRole.parent
-          : MemberRole.child;
-      notifyListeners();
-    });
-
-    _status = AuthStatus.ready;
-    notifyListeners();
   }
 
   void _clearFamily() {
