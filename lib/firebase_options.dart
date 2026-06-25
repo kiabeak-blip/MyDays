@@ -28,11 +28,11 @@ class DefaultFirebaseOptions {
   // ── Replace these with values from `flutterfire configure` ────────────────
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'REPLACE_ME',
-    appId: 'REPLACE_ME',
-    messagingSenderId: 'REPLACE_ME',
-    projectId: 'REPLACE_ME',
-    storageBucket: 'REPLACE_ME',
+    apiKey: 'AIzaSyD9VxgwiR6qciG4vAXrjmITSYOIMWjsJIQ',
+    appId: '1:548762911232:android:668bb70699d984e70a0ee5',
+    messagingSenderId: '548762911232',
+    projectId: 'mydays-84ed9',
+    storageBucket: 'mydays-84ed9.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
