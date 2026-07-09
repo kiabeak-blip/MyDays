@@ -77,7 +77,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   if (!kIsWeb) ...[
                     if (!kIsWeb && Platform.isIOS) ...[
                       SignInWithAppleButton(
-                        onPressed: _loading ? null : _signInApple,
+                        onPressed: () { if (!_loading) _signInApple(); },
                         height: 48,
                       ),
                       const SizedBox(height: 12),
