@@ -1,6 +1,8 @@
+import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/auth_provider.dart' as ap;
 
@@ -73,6 +75,13 @@ class _AuthScreenState extends State<AuthScreen> {
                   const SizedBox(height: 40),
 
                   if (!kIsWeb) ...[
+                    if (!kIsWeb && Platform.isIOS) ...[
+                      SignInWithAppleButton(
+                        onPressed: _loading ? null : _signInApple,
+                        height: 48,
+                      ),
+                      const SizedBox(height: 12),
+                    ],
                     FilledButton.icon(
                       onPressed: _loading ? null : _signInGoogle,
                       icon: const Text('G',
@@ -195,6 +204,12 @@ class _AuthScreenState extends State<AuthScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _signInApple() async {
+    setState(() { _loading = true; _error = null; });
+    final err = await context.read<ap.AuthProvider>().signInWithApple();
+    if (mounted) setState(() { _loading = false; _error = err; });
   }
 
   Future<void> _signInGoogle() async {
