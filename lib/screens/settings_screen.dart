@@ -64,9 +64,58 @@ class SettingsScreen extends StatelessWidget {
             title: Text(l.signOut, style: TextStyle(color: errorColor)),
             onTap: () => _confirmSignOut(context, auth),
           ),
+
+          // ── Danger zone ───────────────────────────────────────────────
+          _SectionHeader(label: 'Account'),
+          ListTile(
+            leading: Icon(Icons.delete_forever_outlined, color: errorColor),
+            title: Text('Delete Account', style: TextStyle(color: errorColor)),
+            subtitle: const Text('Permanently remove your account and all data'),
+            onTap: () => _confirmDeleteAccount(context, auth),
+          ),
+          const SizedBox(height: 24),
         ],
       ),
     );
+  }
+
+  Future<void> _confirmDeleteAccount(
+      BuildContext context, ap.AuthProvider auth) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Account'),
+        content: const Text(
+          'This will permanently delete your account and remove you from your family group. '
+          'This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    final err = await auth.deleteAccount();
+    if (!context.mounted) return;
+    if (err != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(err),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
   }
 
   Future<void> _confirmSignOut(

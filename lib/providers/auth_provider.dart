@@ -145,8 +145,11 @@ class AuthProvider extends ChangeNotifier {
         nonce: nonce,
       );
 
+      final idToken = credential.identityToken;
+      if (idToken == null) return 'Sign in with Apple failed: missing identity token';
+
       final oauthCredential = OAuthProvider('apple.com').credential(
-        idToken: credential.identityToken,
+        idToken: idToken,
         rawNonce: rawNonce,
       );
 
@@ -255,6 +258,31 @@ class AuthProvider extends ChangeNotifier {
     await _svc.updateAllowChildAddTasks(_familyId!, value);
     _allowChildAddTasks = value;
     notifyListeners();
+  }
+
+  Future<String?> deleteAccount() async {
+    if (_user == null) return 'Not signed in';
+    try {
+      final uid = _user!.uid;
+      final familyId = _familyId;
+      final memberId = _memberId;
+      if (familyId != null && memberId != null) {
+        await _svc.deleteMember(familyId, memberId);
+      }
+      await _svc.deleteUserRecord(uid);
+      await _user!.delete();
+      _clearFamily();
+      _status = AuthStatus.unauthenticated;
+      notifyListeners();
+      return null;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'requires-recent-login') {
+        return 'For security, please sign out and sign back in before deleting your account.';
+      }
+      return e.message ?? 'Failed to delete account.';
+    } catch (e) {
+      return e.toString();
+    }
   }
 
   Future<void> signOut() async {

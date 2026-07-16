@@ -74,14 +74,24 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   const SizedBox(height: 40),
 
-                  if (!kIsWeb) ...[
-                    if (!kIsWeb && Platform.isIOS) ...[
-                      SignInWithAppleButton(
-                        onPressed: () { if (!_loading) _signInApple(); },
-                        height: 48,
+                  if (!kIsWeb && Platform.isIOS) ...[
+                    SignInWithAppleButton(
+                      onPressed: () { if (!_loading) _signInApple(); },
+                      height: 48,
+                    ),
+                    const SizedBox(height: 20),
+                    Row(children: [
+                      const Expanded(child: Divider()),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text('or',
+                            style: TextStyle(color: cs.onSurfaceVariant)),
                       ),
-                      const SizedBox(height: 12),
-                    ],
+                      const Expanded(child: Divider()),
+                    ]),
+                    const SizedBox(height: 20),
+                  ],
+                  if (!kIsWeb && !Platform.isIOS) ...[
                     FilledButton.icon(
                       onPressed: _loading ? null : _signInGoogle,
                       icon: const Text('G',

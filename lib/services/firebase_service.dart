@@ -102,6 +102,9 @@ class FirebaseService {
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
+  Future<void> deleteUserRecord(String uid) =>
+      _db.collection('users').doc(uid).delete();
+
   // ── Members ─────────────────────────────────────────────────────────────
 
   Stream<List<FamilyMember>> watchMembers(String familyId) =>
