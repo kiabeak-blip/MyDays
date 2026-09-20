@@ -1,0 +1,138 @@
+# Codemagic CI/CD configuration for the MyDays - Family Tasks app.
+#
+# Two workflows:
+#   * android-workflow  -> builds a signed .aab and publishes to Google Play
+#   * ios-workflow      -> builds a signed .ipa and publishes to App Store / TestFlight
+#
+# Pinning `flutter:` here is the whole point of moving to codemagic.yaml: it
+# stops the "works locally, fails on Codemagic" drift by making CI use the same
+# Flutter version as your machine. Keep this equal to your local `flutter --version`.
+#
+# Before the first run you must configure a few things in the Codemagic UI —
+# see CODEMAGIC_SETUP.md. Placeholders below are marked with <-- SET THIS.
+#
+# NOTE (differs from the prayer app): MyDays' android/app/build.gradle.kts reads
+# the keystore straight from Codemagic's CM_KEYSTORE_* environment variables,
+# which Codemagic injects automatically from the `android_signing` reference.
+# So there is NO "write key.properties" step here — none is needed.
+
+definitions:
+  flutter_version: &flutter_version 3.44.8   # <-- match your local `flutter --version`
+
+workflows:
+  # ─────────────────────────────────────────────────────────────────────────
+  android-workflow:
+    name: Android (Google Play)
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      flutter: *flutter_version
+      groups:
+        - google_play          # contains GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+      android_signing:
+        - mydaysyaml           # <-- SET THIS: keystore reference name uploaded in Codemagic
+      vars:
+        PACKAGE_NAME: "com.mydays.mydays"
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+    scripts:
+      - name: Get Flutter packages
+        script: flutter pub get
+      - name: Build signed app bundle (auto build number)
+        script: |
+          # Ask Google Play for the highest build number already uploaded and
+          # add 1. Falls back to the pubspec build number for the first upload
+          # (when the app/track has no builds yet).
+          LATEST=$(google-play get-latest-build-number --package-name "$PACKAGE_NAME" 2>/dev/null || true)
+          if [ -n "$LATEST" ]; then
+            echo "Latest Play build number: $LATEST -> building $(($LATEST + 1))"
+            flutter build appbundle --release --build-number=$(($LATEST + 1))
+          else
+            echo "No existing Play build number; using pubspec build number."
+            flutter build appbundle --release
+          fi
+    artifacts:
+      - build/**/outputs/bundle/**/*.aab
+      - build/**/outputs/**/mapping.txt
+    publishing:
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal          # promote to 'production' from Play Console once tested
+        submit_as_draft: true
+      email:
+        recipients:
+          - imanbarkus2016@gmail.com
+        notify:
+          success: true
+          failure: true
+
+  # ─────────────────────────────────────────────────────────────────────────
+  ios-workflow:
+    name: iOS (App Store)
+    max_build_duration: 90
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: mydays_asc_key   # <-- SET THIS: App Store Connect API key name in Codemagic
+                                          #     (you may REUSE the same key you set up for the prayer
+                                          #      app — the ASC API key is account-wide; just enter
+                                          #      whatever name that integration has in Codemagic.)
+    environment:
+      flutter: *flutter_version
+      groups:
+        - ios_signing          # must contain CERTIFICATE_PRIVATE_KEY (persistent RSA key)
+      vars:
+        BUNDLE_ID: "com.mydays.app"
+        APP_STORE_APPLE_ID: 6776810300   # MyDays numeric Apple ID (from Apple's ITMS-90035 email / App Information)
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+    scripts:
+      - name: Get Flutter packages
+        script: flutter pub get
+      - name: Install CocoaPods dependencies
+        script: find . -name "Podfile" -execdir pod install \;
+      - name: Set up code signing (reuse persistent cert)
+        script: |
+          keychain initialize
+          # Use ONE persistent private key (stored in Codemagic as CERTIFICATE_PRIVATE_KEY)
+          # so the distribution certificate is created once and reused every build —
+          # instead of minting a new cert per build and hitting Apple's 2-cert limit.
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --certificate-key=@env:CERTIFICATE_PRIVATE_KEY \
+            --create
+          keychain add-certificates
+          xcode-project use-profiles
+      - name: Build signed IPA (auto build number)
+        script: |
+          # Ask TestFlight for the highest build number and add 1. Falls back to
+          # the pubspec build number if the Apple ID isn't set or has no builds.
+          LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID" 2>/dev/null || true)
+          if [ -n "$LATEST" ]; then
+            echo "Latest TestFlight build number: $LATEST -> building $(($LATEST + 1))"
+            flutter build ipa --release --build-number=$(($LATEST + 1))
+          else
+            echo "No TestFlight build number; using pubspec build number."
+            flutter build ipa --release
+          fi
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        # submit_to_app_store: true   # uncomment to auto-submit for App Store review
+      email:
+        recipients:
+          - imanbarkus2016@gmail.com
+        notify:
+          success: true
+          failure: true
