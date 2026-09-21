@@ -75,15 +75,16 @@ workflows:
     name: iOS (App Store)
     max_build_duration: 90
     instance_type: mac_mini_m2
-    integrations:
-      app_store_connect: mydays_asc_key   # <-- SET THIS: App Store Connect API key name in Codemagic
-                                          #     (you may REUSE the same key you set up for the prayer
-                                          #      app — the ASC API key is account-wide; just enter
-                                          #      whatever name that integration has in Codemagic.)
     environment:
       flutter: *flutter_version
       groups:
-        - ios_signing          # must contain CERTIFICATE_PRIVATE_KEY (persistent RSA key)
+        # The ios_signing group must contain (add these in Codemagic > Environment variables):
+        #   APP_STORE_CONNECT_ISSUER_ID       -> 4e17fab7-42a0-49eb-a4ae-6344310ce9d8
+        #   APP_STORE_CONNECT_KEY_IDENTIFIER  -> R3Q8Y794H7
+        #   APP_STORE_CONNECT_PRIVATE_KEY     -> full contents of AuthKey_R3Q8Y794H7.p8
+        #   CERTIFICATE_PRIVATE_KEY           -> full contents of ios_distribution_key.pem
+        # The app-store-connect CLI reads the three APP_STORE_CONNECT_* vars automatically.
+        - ios_signing
       vars:
         BUNDLE_ID: "com.mydays.app"
         APP_STORE_APPLE_ID: 6776810300   # MyDays numeric Apple ID (from Apple's ITMS-90035 email / App Information)
@@ -127,7 +128,9 @@ workflows:
       - /tmp/xcodebuild_logs/*.log
     publishing:
       app_store_connect:
-        auth: integration
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY   # contents of AuthKey_R3Q8Y794H7.p8
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER # R3Q8Y794H7
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID   # 4e17fab7-42a0-49eb-a4ae-6344310ce9d8
         submit_to_testflight: true
         # submit_to_app_store: true   # uncomment to auto-submit for App Store review
       email:
