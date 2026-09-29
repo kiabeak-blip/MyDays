@@ -1,12 +1,8 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:math';
-import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:uuid/uuid.dart';
 import '../models/family_member.dart';
 import '../services/firebase_service.dart';
@@ -134,44 +130,25 @@ class AuthProvider extends ChangeNotifier {
 
   Future<String?> signInWithApple() async {
     try {
-      final rawNonce = _generateNonce();
-      final nonce = _sha256ofString(rawNonce);
-
-      final credential = await SignInWithApple.getAppleIDCredential(
-        scopes: [
-          AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName,
-        ],
-        nonce: nonce,
-      );
-
-      final idToken = credential.identityToken;
-      if (idToken == null) return 'Sign in with Apple failed: missing identity token';
-
-      final oauthCredential = OAuthProvider('apple.com').credential(
-        idToken: idToken,
-        rawNonce: rawNonce,
-      );
-
-      await _auth.signInWithCredential(oauthCredential);
+      // Let the Firebase iOS SDK drive the whole Sign in with Apple flow
+      // (native sheet + nonce handled internally). This avoids the manual
+      // token/nonce path that returned "invalid-credential / Invalid OAuth
+      // response from apple.com".
+      final appleProvider = AppleAuthProvider()
+        ..addScope('email')
+        ..addScope('name');
+      await _auth.signInWithProvider(appleProvider);
       return null;
-    } on SignInWithAppleAuthorizationException catch (e) {
-      if (e.code == AuthorizationErrorCode.canceled) return 'Sign-in cancelled';
-      return e.message;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'canceled' ||
+          e.code == 'user-canceled' ||
+          e.code == 'web-context-canceled') {
+        return 'Sign-in cancelled';
+      }
+      return e.message ?? 'Sign in with Apple failed.';
     } catch (e) {
       return e.toString();
     }
-  }
-
-  String _generateNonce([int length = 32]) {
-    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
-    final random = Random.secure();
-    return List.generate(length, (_) => chars[random.nextInt(chars.length)]).join();
-  }
-
-  String _sha256ofString(String input) {
-    final bytes = utf8.encode(input);
-    return sha256.convert(bytes).toString();
   }
 
   Future<String?> signInWithEmail(String email, String password) async {
